@@ -3,81 +3,94 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
   <title>QR Code and Barcode Generator</title>
-  <style>
-    body {
-        background-image: url(type1.jpg);
-      font-family: Arial, sans-serif;
-      text-align: center;
-      margin-top: 20px;
-    }
-    .container {
-      display: flex;
-      justify-content: center;
-      flex-wrap: wrap;
-      gap: 20px;
-      margin-top: 20px;
-    }
-    .item {
-      border: 1px solid #ddd;
-      padding: 10px;
-      border-radius: 5px;
-      width: 250px;
-      text-align: center;
-    }
-    .item canvas, .item img {
-      margin: 10px auto;
-    }
- </style>
-</head> 
+</head>
 <body>
-  <h1><p style="color:rgb(74, 186, 211);">QR Code and Barcode Generator</p></h1>
-  <textarea id="values" rows="3" cols="30" placeholder="Enter values separated by commas"></textarea>
-  <br />
-  <button onclick="generateCodes()">Generate Codes</button>
-  <div class="container" id="output"></div>
+  <div class="fullContainer">
+  <h2>QR Code and Barcode Generator</h2>
+  <div class="container">
+   
+    <input type="text" id="url" placeholder="Enter URL or text" oninput="toggleButtons()" style="width: 340px;">
+    <div class="button-row">
+      <button id="generateQR" onclick="generateQRCode()" disabled>Generate QR Code</button>
+      <button id="generateBarcode" onclick="generateBarcode()" disabled>Generate Barcode</button>
+    </div>
+    <div id="qrcode"></div>
+    <canvas id="barcode"></canvas>
+    <button class="download-btn" onclick="downloadCode()" style="width: 340px;" >Download</button>
+  </div>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
   <script>
-    function generateCodes() {
-      const output = document.getElementById("output");
-      output.innerHTML = ""; // Clear previous codes
-      const values = document.getElementById("values").value.split(",");
+    // JavaScript code remains the same as the previous version
+    function toggleButtons() {
+      const url = document.getElementById('url').value;
+      const generateQRButton = document.getElementById('generateQR');
+      const generateBarcodeButton = document.getElementById('generateBarcode');
 
-      if (values.length > 0) {
-        values.forEach(value => {
-          const trimmedValue = value.trim();
-          if (trimmedValue) {
-            const item = document.createElement("div");
-            item.className = "item";
+      generateQRButton.disabled = url.length <= 1;
+      generateBarcodeButton.disabled = url.length <= 1;
+    }
 
-            // Create QR Code
-            const qrDiv = document.createElement("div");
-            new QRCode(qrDiv, {
-              text: trimmedValue,
-              width: 100,
-              height: 100,
-            });
+    function generateQRCode() {
+      const qrcodeDiv = document.getElementById('qrcode');
+      const barcodeCanvas = document.getElementById('barcode');
+      const downloadBtn = document.querySelector('.download-btn');
 
-            // Create Barcode
-            const barcodeCanvas = document.createElement("canvas");
-            JsBarcode(barcodeCanvas, trimmedValue, {
-              format: "CODE128",
-              width: 2,
-              height: 50,
-              displayValue: true,
-            });
+      qrcodeDiv.innerHTML = ""; // Clear previous QR Code
+      barcodeCanvas.style.display = 'none'; // Hide barcode
+      qrcodeDiv.style.display = 'block'; // Show QR code
+      downloadBtn.style.display = 'block'; // Show download button
 
-            item.appendChild(qrDiv);
-            item.appendChild(barcodeCanvas);
-            output.appendChild(item);
-          }
-        });
+      const url = document.getElementById('url').value;
+      new QRCode(qrcodeDiv, {
+        text: url,
+        width: 128,
+        height: 128,
+      });
+    }
+
+    function generateBarcode() {
+      const barcodeCanvas = document.getElementById('barcode');
+      const qrcodeDiv = document.getElementById('qrcode');
+      const downloadBtn = document.querySelector('.download-btn');
+
+      barcodeCanvas.style.display = 'block'; // Show barcode
+      qrcodeDiv.style.display = 'none'; // Hide QR code
+      downloadBtn.style.display = 'block'; // Show download button
+
+      const url = document.getElementById('url').value;
+      JsBarcode(barcodeCanvas, url, {
+        format: "CODE128",
+        width: 1,
+        height: 50,
+        displayValue: true,
+      });
+    }
+
+    function downloadCode() {
+      const qrcodeCanvas = document.querySelector('#qrcode canvas');
+      const barcodeCanvas = document.getElementById('barcode');
+      const downloadBtn = document.querySelector('.download-btn');
+
+      if (qrcodeCanvas && qrcodeCanvas.parentElement.style.display === 'block') {
+        const link = document.createElement('a');
+        link.download = 'qrcode.png';
+        link.href = qrcodeCanvas.toDataURL('image/png');
+        link.click();
+      } else if (barcodeCanvas.style.display === 'block') {
+        const link = document.createElement('a');
+        link.download = 'barcode.png';
+        link.href = barcodeCanvas.toDataURL('image/png');
+        link.click();
       } else {
-        alert("Please enter values separated by commas.");
+        alert('Please generate a QR Code or Barcode first.');
       }
     }
   </script>
+  </div>
 </body>
 </html>
